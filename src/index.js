@@ -1,3 +1,2 @@
 require('dotenv').config()
-const ms = require('./microservice')
-ms.init();
+require('./microservice').init()
