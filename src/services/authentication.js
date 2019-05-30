@@ -1,9 +1,9 @@
 const { gql, AuthenticationError } = require('apollo-server')
-const { Credential } = require('../model')
 const jsonwebtoken = require('jsonwebtoken')
 const get = require('lodash/get')
-const config = require('../config')
+const { config, model } = require('../microservice')
 const crypto = require('crypto')
+const { Credential } = model
 
 const typeDefs = gql`
 

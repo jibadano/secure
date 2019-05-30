@@ -4,11 +4,10 @@ const passport = require('passport')
 const FacebookStrategy = require('passport-facebook').Strategy;
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
-const { User } = require('../model')
 const jsonwebtoken = require('jsonwebtoken')
 const get = require('lodash/get')
-const config = require('../config')
-
+const { config, model } = require('../microservice')
+const { User } = model
 passport.serializeUser(function (user, done) {
   done(null, user._id);
 })

@@ -1,5 +1,5 @@
 const { Schema } = require('mongoose')
-const config = require('../config')
+const { config } = require('../microservice')
 module.exports = new Schema({
   _id: String,
   hash: String,
