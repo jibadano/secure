@@ -4,5 +4,5 @@ const { config } = require('..')
 module.exports = new Schema({
   _id: String,
   hash: String,
-  salt: { type: String, max: config.get("security.saltBytes") }
+  salt: { type: String, max: config.get("login.saltBytes") }
 })

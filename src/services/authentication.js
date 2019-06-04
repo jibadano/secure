@@ -58,11 +58,11 @@ const resolvers = {
 
 const sign = user => jsonwebtoken.sign({ user }, config.get('jwt.options.secret'), config.get('jwt.signOptions'))
 
-const validateCredential = ({ password, hash, salt }) => hash == crypto.createHash(config.get("security.algorithm")).update(password + salt).digest('hex')
+const validateCredential = ({ password, hash, salt }) => hash == crypto.createHash(config.get("login.algorithm")).update(password + salt).digest('hex')
 
 const generateCredential = ({ _id, password }) => {
-  const salt = crypto.randomBytes(config.get("security.saltBytes")).toString()
-  const hash = crypto.createHash(config.get("security.algorithm")).update(password + salt).digest('hex')
+  const salt = crypto.randomBytes(config.get("login.saltBytes")).toString()
+  const hash = crypto.createHash(config.get("login.algorithm")).update(password + salt).digest('hex')
   return { _id, hash, salt }
 }
 
