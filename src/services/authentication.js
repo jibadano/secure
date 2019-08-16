@@ -6,14 +6,13 @@ const crypto = require('crypto')
 const { Credential } = model
 
 const typeDefs = gql`
-
   extend type Query {
     me: Session
-    exists(_id:ID): Boolean
+    exists(_id: ID): Boolean
   }
 
   extend type Mutation {
-    login(_id: ID, password:String): Session
+    login(_id: ID, password: String): Session
     signup(_id: ID!, password: String!): Session
     forgot(_id: ID!): Boolean
     updateUser(_id: ID, password: String): Boolean
@@ -36,33 +35,55 @@ const resolvers = {
       const user = get(context, 'session.user')
       return user && { user, token: sign(user) }
     },
-    exists: (_, args) => Credential.findOne(args).select('_id').exec().then(cred => Boolean(cred))
+    exists: (_, args) =>
+      Credential.findOne(args)
+        .select('_id')
+        .exec()
+        .then(cred => Boolean(cred))
   },
   Mutation: {
     login: async (_, { _id, password }) => {
       const user = await Credential.findOne({ _id }).exec()
       user.password = password
-      if (!validateCredential(user)) return new AuthenticationError("Email or password is invalid")
+      if (!validateCredential(user))
+        return new AuthenticationError('Email or password is invalid')
       return { user, token: sign(user) }
     },
     signup: async (_, args) => {
-      let user = await new Credential(generateCredential(args)).save()
-      if (!user) return null
+      const credentials = await new Credential(generateCredential(args)).save()
+      if (!credentials) return null
+      const user = { _id: credentials._id }
       return { user, token: sign(user) }
     },
-    forgot: (_, args) => { console.log(args) },
-    updateUser: (_, { _id, ...update }) => Credential.updateOne({ _id }, update).exec(),
-    deleteUser: (_, args) => Credential.deleteOne(args).exec(),
+    forgot: (_, args) => {
+      console.log(args)
+    },
+    updateUser: (_, { _id, ...update }) =>
+      Credential.updateOne({ _id }, update).exec(),
+    deleteUser: (_, args) => Credential.deleteOne(args).exec()
   }
 }
 
-const sign = user => jsonwebtoken.sign({ user }, config.get('jwt.options.secret'), config.get('jwt.signOptions'))
+const sign = user =>
+  jsonwebtoken.sign(
+    { user },
+    config.get('jwt.options.secret'),
+    config.get('jwt.signOptions')
+  )
 
-const validateCredential = ({ password, hash, salt }) => hash == crypto.createHash(config.get("login.algorithm")).update(password + salt).digest('hex')
+const validateCredential = ({ password, hash, salt }) =>
+  hash ==
+  crypto
+    .createHash(config.get('login.algorithm'))
+    .update(password + salt)
+    .digest('hex')
 
 const generateCredential = ({ _id, password }) => {
-  const salt = crypto.randomBytes(config.get("login.saltBytes")).toString()
-  const hash = crypto.createHash(config.get("login.algorithm")).update(password + salt).digest('hex')
+  const salt = crypto.randomBytes(config.get('login.saltBytes')).toString()
+  const hash = crypto
+    .createHash(config.get('login.algorithm'))
+    .update(password + salt)
+    .digest('hex')
   return { _id, hash, salt }
 }
 
