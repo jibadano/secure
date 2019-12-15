@@ -44,9 +44,11 @@ const resolvers = {
   Mutation: {
     login: async (_, { _id, password }) => {
       const user = await Credential.findOne({ _id }).exec()
+      if (!user) return new AuthenticationError('User not found')
+
       user.password = password
       if (!validateCredential(user))
-        return new AuthenticationError('Email or password is invalid')
+        return new AuthenticationError('Password is invalid')
       return { user, token: sign(user) }
     },
     signup: async (_, args) => {
