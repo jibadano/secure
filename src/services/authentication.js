@@ -2,6 +2,8 @@ const { gql, AuthenticationError } = require('apollo-server')
 const jsonwebtoken = require('jsonwebtoken')
 const get = require('lodash/get')
 const { config, model } = require('..')
+const ms = require('..')
+
 const crypto = require('crypto')
 const { Credential } = model
 
@@ -33,7 +35,7 @@ const resolvers = {
   Query: {
     me: (_, __, context) => {
       const user = get(context, 'session.user')
-      return user && { user, token: sign(user) }
+      return user && { user, token: ms.sign(user) }
     },
     exists: (_, args) =>
       Credential.findOne(args)
@@ -49,13 +51,15 @@ const resolvers = {
       user.password = password
       if (!validateCredential(user))
         return new AuthenticationError('Password is invalid')
-      return { user, token: sign(user) }
+
+      const session = { user: { _id: user._id } }
+      return { user: session.user, token: ms.sign(session) }
     },
     signup: async (_, args) => {
       const credentials = await new Credential(generateCredential(args)).save()
       if (!credentials) return null
       const user = { _id: credentials._id }
-      return { user, token: sign(user) }
+      return { user, token: ms.sign({ user }) }
     },
     forgot: (_, args) => {
       console.log(args)
@@ -65,13 +69,6 @@ const resolvers = {
     deleteUser: (_, args) => Credential.deleteOne(args).exec()
   }
 }
-
-const sign = user =>
-  jsonwebtoken.sign(
-    { user },
-    config.get('jwt.options.secret'),
-    config.get('jwt.signOptions')
-  )
 
 const validateCredential = ({ password, hash, salt }) =>
   hash ==
